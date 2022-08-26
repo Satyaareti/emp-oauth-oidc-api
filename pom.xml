@@ -46,7 +46,7 @@
 						<applicationName>mulesoft-cicd-sample</applicationName>
 					</standaloneDeployment>
 					-->
-					<classifier>mule-application</classifier>
+					<classifier>mule-application-example</classifier>
 				</configuration>
 			</plugin>
 		</plugins>
