@@ -1,0 +1,91 @@
+#%RAML 1.0
+title: emp-oauth-oidc-api
+version: v1.0
+baseUri: http://localhost:8081/api
+
+types:
+  employee: !include dataTypes/Employee.raml
+  employeeResponse: !include dataTypes/EmployeeResponse.raml
+  errorResponse: !include dataTypes/ErrorResponse.raml
+  successResponse: !include dataTypes/SuccessResponse.raml
+
+/employees:
+  post:
+    displayName: Create employee
+    description: |
+      Creates the employee in all the system APIs
+    body: 
+      application/json:
+        type: employee
+        example: !include examples/post_employee_example.yaml
+    responses:
+      202:
+        description: Accepted and sent for processing
+        headers:
+          Location:
+            description: The url where to check the asynchronous process status
+            example: http://{hostname}/queue/elements/{element-id}
+        body:
+          application/json:
+            type: successResponse
+            example: {
+              "status": "Accepted"
+            }   
+  /{id}:
+    uriParameters:
+      id:
+        type: string
+        example: 20a5ea46-a4ee-4542-93f4-9040a4ec078b
+        description: Represents the employee process unique id in form of UUID
+    get:
+      displayName: Get employee process status by id
+      description: Get Employee process status by ID
+      responses:
+        200:
+          body:
+            application/json:
+              type: employeeResponse
+              example: !include examples/get_employee_example.yaml
+        404:
+          body:
+            application/json:
+              type: errorResponse
+              example: |
+                {
+                  "message": "Resource not found"
+                }
+
+
+ 
+/queue/elements/{id}:
+    uriParameters:
+      id:
+        type: string
+        example: 20a5ea46-a4ee-4542-93f4-9040a4ec078b
+        description: Represents the employee onboarding process unique id in form of UUID
+    get:
+      displayName: Get queue status by id
+      description: Get queue status for Employees onboarding process by temporary ID
+      responses:
+        200:
+          body:
+            application/json:
+              type: errorResponse
+              example: |
+                {
+                  "message": "In progress"
+                }
+        303:
+          description: After asynchronous processing is complete to indicate the final location of the new resource
+          headers:
+            Location:
+              description: The url where to fetch the actual entity created asynchronously
+              example: http://{hostname}/employees/{employee-id}     
+        404:
+          body:
+            application/json:
+              type: errorResponse
+              example: |
+                {
+                  "message": "Resource not found"
+                }
